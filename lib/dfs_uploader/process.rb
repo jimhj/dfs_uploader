@@ -41,11 +41,23 @@ module DfsUploader
 			self
 		end
 
-		def crop
-		end
-
 
 		def create_thumbs
+      full_path = File.join(@target_dir, "o_#{@filename}.#{@ext}")
+      img = MiniMagick::Image.open full_path
+      DfsUploader.configuration.thumbs.each_pair do |prefix, size|
+        x, y = size.split('x').map{ |length| length.to_i }
+        if x == y
+          w, h = img[:dimensions]
+          shave = ((w - h).abs / 2).round
+          shave = w > h ? "#{shave}x0" : "0x#{shave}"
+          img.shave shave
+
+          # img.shave("#{((w - x) / 2).round}x#{((h - y).to_f / 2).round}")
+        end
+        img.resize size 
+        img.write File.join(@target_dir, "#{prefix}_#{@filename}.#{@ext}")
+      end
 		end
 
 		private
@@ -80,32 +92,32 @@ module DfsUploader
 		class << self
 
 			def upload(file, store_as, opts = {})
-				process = self.new(file, store_as, opts = {})
+				process = self.new(file, store_as, opts)
 				process.upload
 				process
 			end
 
 			def crop(opts = {}, coordinate)
 				# opts[:img], opts[:preview_img] can be an url(http://www.xxx.com/x.jpg) or a file path(/var/xxx.jpg).
-
 				raise ArgumentError, "wrong crop coordinates." unless coordinate.length === 4
 
-				coord = OpenStruct.new
-				%w(x y w h).each_with_index { |c, i| coord.send(c, coordinate[i]).to_f }
+				# coord = OpenStruct.new
+				# %w(x y w h).each_with_index { |c, i| coord.send(c, coordinate[i]).to_f }
 
-				img = MiniMagick::Image.open(opts[:img]).clone
-				preview_img = MiniMagick::Image.open(opts[:preview_img]).clone
+				img = MiniMagick::Image.open(opts.delete(:img)).clone
+				preview_img = MiniMagick::Image.open(opts.delete(:preview_img)).clone
 				roundx = img[:width].to_f / preview_img[:width]
 				roundy = img[:height].to_f / preview_img[:height]
 
-        x = (coord.x * roundx).round
-        y = (coord.y * roundy).round
-        w = (coord.w * roundx).round
-        h = (coord.h * roundy).round
+        x = (coordinate[0] * roundx).round
+        y = (coordinate[1] * roundy).round
+        w = (coordinate[2]* roundx).round
+        h = (coordinate[3] * roundy).round
 
         img.crop("#{w}x#{h}+#{x}+#{y}!")
         img.coalesce(img.path, img.path)
-        crop = self.process(img.path, opts[:store_as])
+        
+        crop = self.upload(img.path, opts.delete(:store_as), opts)
         crop
         
 			end
