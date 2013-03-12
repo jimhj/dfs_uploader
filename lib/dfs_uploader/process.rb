@@ -16,7 +16,7 @@ module DfsUploader
 			@file_path = file_path
 			@rand_dir = mk_rand_dir_name
 			@target_dir = mk_target_dir_name
-			@opts[:create_thumbs] ||= true
+			# @opts[:create_thumbs] ||= true
 
 			@image = MiniMagick::Image.open(@file_path)
 			@ext = @image[:format].downcase
@@ -36,7 +36,7 @@ module DfsUploader
 			FileUtils.mkdir_p(@target_dir)
 			full_path = File.join(@target_dir, "o_#{@filename}.#{@ext}")
 			self.image.write(full_path)
-			create_thumbs if @opts[:create_thumbs]
+			create_thumbs unless @opts[:create_thumbs] === false
 			@dfs_path = [@filename, @ext, 0, 0, @store_as, 0, 0, @rand_dir.split('/')].join('|')
 			self
 		end
@@ -94,7 +94,6 @@ module DfsUploader
 			def upload(file, store_as, opts = {})
 				process = self.new(file, store_as, opts)
 				process.upload
-				process
 			end
 
 			def crop(opts = {}, coordinate)
@@ -116,10 +115,8 @@ module DfsUploader
 
         img.crop("#{w}x#{h}+#{x}+#{y}!")
         img.coalesce(img.path, img.path)
-        
-        crop = self.upload(img.path, opts.delete(:store_as), opts)
-        crop
-        
+
+        self.upload(img.path, opts.delete(:store_as), opts)        
 			end
 
 		end
