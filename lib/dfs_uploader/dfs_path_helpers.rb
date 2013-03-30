@@ -3,11 +3,7 @@ module DfsUploader
 	module DfsPathHelpers
 		
 		def dfs_to_url(dfs, size)
-			arr = (dfs || '').split('|')
-	    return '' if arr.length <= 1
-	    file_name = "#{size.to_s}_#{arr[0]}.#{arr[1]}"
-	    file_path = '/' + File.join(arr[4], arr[-2], arr[-1], file_name)
-
+      file_path = dfs_path(dfs, size)
 	    dfs_assets_host = DfsUploader.configuration.assets_host
 
 	    if dfs_assets_host.present?
@@ -15,6 +11,21 @@ module DfsUploader
 	    end
 	    file_path
 	  end
+
+    def dfs_to_path(dfs, size)
+      file_path = dfs_path(dfs, size)
+      File.join(DfsUploader.configuration.assets_path, file_path)
+    end
+
+    private
+
+    def dfs_path(dfs, size)
+      arr = (dfs || '').split('|')
+      return '' if arr.length <= 1
+      file_name = "#{size.to_s}_#{arr[0]}.#{arr[1]}"
+      file_path = '/' + File.join(arr[4], arr[-2], arr[-1], file_name)
+      file_path           
+    end
 
 	end
 
