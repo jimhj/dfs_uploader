@@ -104,7 +104,12 @@ module DfsUploader
 				# %w(x y w h).each_with_index { |c, i| coord.send(c, coordinate[i]).to_f }
 
 				img = MiniMagick::Image.open(opts.delete(:img)).clone
-				preview_img = MiniMagick::Image.open(opts.delete(:preview_img)).clone
+        if opts[:preview_img]
+				  preview_img = MiniMagick::Image.open(opts.delete(:preview_img)).clone
+        else
+          preview_img = img
+        end
+        
 				roundx = img[:width].to_f / preview_img[:width]
 				roundy = img[:height].to_f / preview_img[:height]
 
