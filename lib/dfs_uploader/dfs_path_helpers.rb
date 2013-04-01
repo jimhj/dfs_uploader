@@ -7,7 +7,7 @@ module DfsUploader
       return '' if arr.length <= 1
       file_name = "#{size.to_s}_#{arr[0]}.#{arr[1]}"
       file_path = '/' + File.join(arr[4], arr[-2], arr[-1], file_name)
-      
+
 	    dfs_assets_host = DfsUploader.configuration.assets_host
 
 	    if dfs_assets_host.present?
@@ -17,13 +17,11 @@ module DfsUploader
 	  end
 
     def dfs_to_path(dfs, size)
-      file_path = dfs_path(dfs, size)
+      file_path = get_file_path(dfs, size)
       File.join(DfsUploader.configuration.assets_path, file_path)
     end
 
-    private
-
-    def dfs_path(dfs, size)
+    def get_file_path(dfs, size)
       arr = (dfs || '').split('|')
       return '' if arr.length <= 1
       file_name = "#{size.to_s}_#{arr[0]}.#{arr[1]}"
