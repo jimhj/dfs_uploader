@@ -14,6 +14,9 @@ module DfsUploader
 			@errors = []
 			@filename = filename
 			@file_path = file_path
+
+      FileUtils.chmod(0660, @file_path) #!!!!!!
+
 			@rand_dir = mk_rand_dir_name
 			@target_dir = mk_target_dir_name
 			# @opts[:create_thumbs] ||= true
@@ -63,7 +66,6 @@ module DfsUploader
 		private
 
 		def file_path
-      FileUtils.chmod(0660, @orig_file)
 			case @orig_file.class.to_s
 			when "ActionDispatch::Http::UploadedFile"
 				@orig_file.tempfile.path
