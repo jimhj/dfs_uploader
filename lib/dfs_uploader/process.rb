@@ -63,6 +63,7 @@ module DfsUploader
 		private
 
 		def file_path
+      FileUtils.chmod(0660, @orig_file)
 			case @orig_file.class.to_s
 			when "ActionDispatch::Http::UploadedFile"
 				@orig_file.tempfile.path
