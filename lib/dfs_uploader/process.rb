@@ -19,7 +19,12 @@ module DfsUploader
 			@target_dir = mk_target_dir_name
 			# @opts[:create_thumbs] ||= true
 
-			@image = MiniMagick::Image.open(@file_path)
+			@image = begin
+        MiniMagick::Image.open(@file_path)
+      rescue Exception => e
+        raise DfsUploader::ImageTypeError
+      end
+      
 			@ext = @image[:format].downcase
 			@size = @image[:size].to_i
 
