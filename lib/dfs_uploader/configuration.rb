@@ -7,7 +7,7 @@ module DfsUploader
       self.extension_white_list = %w(jpg jpeg png gif)
       self.max_size = 10485760 #B
       self.assets_path = File.join(Rails.root, "public")
-      self.assets_host = nil
+      self.assets_host = "http://localhost:3000"
       self.thumbs = {
         :l => '600x900>',      
         :m => '200x300>',
