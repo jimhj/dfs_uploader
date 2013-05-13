@@ -4,8 +4,8 @@ module DfsUploader
 	require 'open-uri'
 
 	class Process 
+		attr_accessor :orig_file, :image, :ext, :size, :original_dimensions, :store_as, :opts, :dfs_path
 
-		attr_accessor :orig_file, :image, :ext, :size, :store_as, :opts, :dfs_path
 
 		def initialize(file, store_as, opts = {})
 			@orig_file = file
@@ -17,7 +17,6 @@ module DfsUploader
 
 			@rand_dir = mk_rand_dir_name
 			@target_dir = mk_target_dir_name
-			# @opts[:create_thumbs] ||= true
 
 			@image = begin
         MiniMagick::Image.open(@file_path)
@@ -27,6 +26,7 @@ module DfsUploader
       
 			@ext = @image[:format].downcase
 			@size = @image[:size].to_i
+      @original_dimensions = @image[:dimensions]
 
 			if !DfsUploader.configuration.extension_white_list.include?(@ext)
 				raise DfsUploader::ImageTypeError 
@@ -35,8 +35,34 @@ module DfsUploader
 			if @image[:size].to_i > DfsUploader.configuration.max_size	
 				raise DfsUploader::MaxSizeError
 			end
+
+      if @opts[:ratio]
+        w, h = @image[:dimensions]
+        ratio_w, ratio_h = @opts[:ratio].split(":").map{ |i| i.to_i }
+
+        if (w.to_f / h) != (ratio_w.to_f / ratio_h)
+          if w > h
+            extend_w = w
+            extend_h = (ratio_h * w - ratio_w * h) / ratio_w + h
+          elsif w <= h
+            extend_w = (ratio_w * h  - ratio_h * w) / ratio_h + w
+            extend_h = h
+          end
+          self.extent_edge!("#{extend_w}x#{extend_h}")
+        end
+      end      
 					
 		end
+
+    def extent_edge!(size, opts = {})
+      # convert logo16.jpg -gravity center -background white -extent 200x200  output.jpg
+      opts[:position] ||= 'center'
+      opts[:edge_color] ||= 'black'
+      cmd = "convert  -gravity #{opts[:position]} -background #{opts[:edge_color]} -extent #{size} #{@file_path} #{@file_path}"
+
+      @image.run_command cmd
+      @image = MiniMagick::Image.open(@file_path) # reload image
+    end
 
 		def upload
 			FileUtils.mkdir_p(@target_dir)
@@ -59,7 +85,6 @@ module DfsUploader
           shave = ((w - h).abs / 2).round
           shave = w > h ? "#{shave}x0" : "0x#{shave}"
           img.shave shave
-
           # img.shave("#{((w - x) / 2).round}x#{((h - y).to_f / 2).round}")
         end
         img.resize size 
