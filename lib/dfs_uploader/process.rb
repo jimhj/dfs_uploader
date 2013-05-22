@@ -40,16 +40,17 @@ module DfsUploader
         w, h = @image[:dimensions]
         ratio_w, ratio_h = @opts[:ratio].split(":").map{ |i| i.to_i }
 
-        if (w.to_f / h) != (ratio_w.to_f / ratio_h)
-          if w > h
-            extend_w = w
-            extend_h = (ratio_h * w - ratio_w * h) / ratio_w + h
-          elsif w <= h
-            extend_w = (ratio_w * h  - ratio_h * w) / ratio_h + w
-            extend_h = h
-          end
-          self.extent_edge!("#{extend_w}x#{extend_h}")
+        return if (w.to_f / h) == (ratio_w.to_f / ratio_h)
+
+        if w > h
+          extend_w = w
+          extend_h = (ratio_h * w - ratio_w * h) / ratio_w + h
+        elsif w <= h
+          extend_w = (ratio_w * h  - ratio_h * w) / ratio_h + w
+          extend_h = h
         end
+
+        self.extent_edge!("#{extend_w}x#{extend_h}")
       end      
 					
 		end
@@ -58,7 +59,7 @@ module DfsUploader
       # convert logo16.jpg -gravity center -background white -extent 200x200  output.jpg
       opts[:position] ||= 'center'
       opts[:edge_color] ||= 'black'
-      cmd = "convert  -gravity #{opts[:position]} -background #{opts[:edge_color]} -extent #{size} #{@file_path} #{@file_path}"
+      cmd = "convert -coalesce -gravity #{opts[:position]} -background #{opts[:edge_color]} -extent #{size} #{@file_path} #{@file_path}"
 
       @image.run_command cmd
       @image = MiniMagick::Image.open(@file_path) # reload image
@@ -120,7 +121,6 @@ module DfsUploader
       Digest::MD5.hexdigest([Time.now.to_i.to_s, rand.to_s].join('-'))
     end				
 
-
 		class << self
 
 			def upload(file, store_as, opts = {})
@@ -131,9 +131,6 @@ module DfsUploader
 			def crop(opts = {}, coordinate)
 				# opts[:img], opts[:preview_img] can be an url(http://www.xxx.com/x.jpg) or a file path(/var/xxx.jpg).
 				raise ArgumentError, "wrong crop coordinates." unless coordinate.length === 4
-
-				# coord = OpenStruct.new
-				# %w(x y w h).each_with_index { |c, i| coord.send(c, coordinate[i]).to_f }
 
 				img = MiniMagick::Image.open(opts.delete(:img)).clone
         if opts[:preview_img]
