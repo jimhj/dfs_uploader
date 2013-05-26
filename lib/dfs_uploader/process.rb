@@ -69,7 +69,7 @@ module DfsUploader
 			FileUtils.mkdir_p(@target_dir)
 			full_path = File.join(@target_dir, "o_#{@filename}.#{@ext}")
 			self.image.write(full_path)
-      FileUtils.chmod(0660, full_path) #!!!!!!
+      FileUtils.chmod(0664, full_path) #!!!!!!
 			create_thumbs unless @opts[:create_thumbs] === false
 			@dfs_path = [@filename, @ext, 0, 0, @store_as, 0, 0, @rand_dir.split('/')].join('|')
 			self
