@@ -67,7 +67,6 @@ module DfsUploader
 
 		def upload
 			FileUtils.mkdir_p(@target_dir)
-      FileUtils.chmod 0777, @target_dir
 			full_path = File.join(@target_dir, "o_#{@filename}.#{@ext}")
       self.image.write(full_path)
       FileUtils.chmod(0664, full_path) #!!!!!!
