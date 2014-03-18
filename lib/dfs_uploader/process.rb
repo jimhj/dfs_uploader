@@ -2,12 +2,14 @@
 module DfsUploader
 	require 'mini_magick'
 	require 'open-uri'
+  require 'logger'
 
 	class Process 
 		attr_accessor :orig_file, :image, :ext, :size, :original_dimensions, :store_as, :opts, :dfs_path
 
 
 		def initialize(file, store_as, opts = {})
+      @logger = Logger.new 'log/dfs_uploader.log'
 			@orig_file = file
 			@store_as = store_as
 			@opts = opts
@@ -21,6 +23,7 @@ module DfsUploader
 			@image = begin
         MiniMagick::Image.open(@file_path)
       rescue Exception => e
+        @logger.error e
         raise DfsUploader::ImageTypeError
       end
       
@@ -51,17 +54,20 @@ module DfsUploader
         end
 
         self.extent_edge!("#{extend_w}x#{extend_h}")
-      end      
-					
+      end
 		end
 
     def extent_edge!(size, opts = {})
       # convert logo16.jpg -gravity center -background white -extent 200x200  output.jpg
       opts[:position] ||= 'center'
       opts[:edge_color] ||= 'black'
-      cmd = "convert -coalesce -gravity #{opts[:position]} -background #{opts[:edge_color]} -extent #{size} #{@file_path} #{@file_path}"
-
-      @image.run_command cmd
+      # symk_2_rgb_cmd = "convert -profile 'CMYK.icc' #{@file_path} -profile 'RGB.icc' #{@file_path}"
+      # symk_2_rgb_cmd = "convert -profile '/Users/huangjin/color_profiles/adobe/CMYK/USWebCoatedSWOP.icc' #{@file_path} -profile '/Users/huangjin/color_profiles/adobe/RGB/AdobeRGB1998.icc' #{@file_path}"
+      # @logger.info symk_2_rgb_cmd
+      # @image.run_command symk_2_rgb_cmd
+      cmd = "convert -coalesce -colorspace rgb -gravity #{opts[:position]} -background #{opts[:edge_color]} -extent #{size} #{@file_path} #{@file_path}"
+      @logger.info cmd
+      @image.run_command cmd      
       @image = MiniMagick::Image.open(@file_path) # reload image
     end
 
