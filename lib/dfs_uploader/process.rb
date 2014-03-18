@@ -24,6 +24,9 @@ module DfsUploader
         MiniMagick::Image.open(@file_path)
       rescue Exception => e
         @logger.error e
+        @logger.info "DfsUploader Error:==========="
+        @logger.info "File path: #{@file_path}"
+      	@logger.info e.backtrace.join("\n")
         raise DfsUploader::ImageTypeError
       end
       
