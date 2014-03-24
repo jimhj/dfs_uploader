@@ -42,6 +42,13 @@ module DfsUploader
 				raise DfsUploader::MaxSizeError
 			end
 
+      tell_smyk = p `identify -format '%[colorspace]' #{@file_path}`
+
+      if tell_smyk.include?('CMYK')
+        system "convert -colorspace RGB #{@file_path} #{@file_path}"
+        @image = MiniMagick::Image.open(@file_path)
+      end      
+
       if @opts[:ratio]
         w, h = @image[:dimensions]
         ratio_w, ratio_h = @opts[:ratio].split(":").map{ |i| i.to_i }
@@ -68,7 +75,8 @@ module DfsUploader
       # symk_2_rgb_cmd = "convert -profile '/Users/huangjin/color_profiles/adobe/CMYK/USWebCoatedSWOP.icc' #{@file_path} -profile '/Users/huangjin/color_profiles/adobe/RGB/AdobeRGB1998.icc' #{@file_path}"
       # @logger.info symk_2_rgb_cmd
       # @image.run_command symk_2_rgb_cmd
-      cmd = "convert -coalesce -colorspace rgb -gravity #{opts[:position]} -background #{opts[:edge_color]} -extent #{size} #{@file_path} #{@file_path}"
+      convert_options = "-coalesce -gravity #{opts[:position]} -extent #{size} -background #{opts[:edge_color]}"
+      cmd = "convert #{convert_options} #{@file_path} #{@file_path}"
       @logger.info cmd
       @image.run_command cmd      
       @image = MiniMagick::Image.open(@file_path) # reload image
