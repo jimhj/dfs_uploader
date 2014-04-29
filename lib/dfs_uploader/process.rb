@@ -75,7 +75,7 @@ module DfsUploader
       # symk_2_rgb_cmd = "convert -profile '/Users/huangjin/color_profiles/adobe/CMYK/USWebCoatedSWOP.icc' #{@file_path} -profile '/Users/huangjin/color_profiles/adobe/RGB/AdobeRGB1998.icc' #{@file_path}"
       # @logger.info symk_2_rgb_cmd
       # @image.run_command symk_2_rgb_cmd
-      convert_options = "-coalesce -gravity #{opts[:position]} -extent #{size} -background #{opts[:edge_color]}"
+      convert_options = "-auto-orient -coalesce -gravity #{opts[:position]} -extent #{size} -background #{opts[:edge_color]}"
       cmd = "convert #{convert_options} #{@file_path} #{@file_path}"
       @logger.info cmd
       @image.run_command cmd      
