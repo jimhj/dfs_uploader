@@ -42,6 +42,8 @@ module DfsUploader
 				raise DfsUploader::MaxSizeError
 			end
 
+      @image.run_command "convert -auto-orient #{@file_path} #{@file_path}"
+
       tell_smyk = p `identify -format '%[colorspace]' #{@file_path}`
 
       if tell_smyk.include?('CMYK') && @ext != "gif"
@@ -71,14 +73,10 @@ module DfsUploader
       # convert logo16.jpg -gravity center -background white -extent 200x200  output.jpg
       opts[:position] ||= 'center'
       opts[:edge_color] ||= 'black'
-      # symk_2_rgb_cmd = "convert -profile 'CMYK.icc' #{@file_path} -profile 'RGB.icc' #{@file_path}"
-      # symk_2_rgb_cmd = "convert -profile '/Users/huangjin/color_profiles/adobe/CMYK/USWebCoatedSWOP.icc' #{@file_path} -profile '/Users/huangjin/color_profiles/adobe/RGB/AdobeRGB1998.icc' #{@file_path}"
-      # @logger.info symk_2_rgb_cmd
-      # @image.run_command symk_2_rgb_cmd
-      convert_options = "-auto-orient -coalesce -gravity #{opts[:position]} -extent #{size} -background #{opts[:edge_color]}"
+      convert_options = "-coalesce -gravity #{opts[:position]} -extent #{size} -background #{opts[:edge_color]}"
       cmd = "convert #{convert_options} #{@file_path} #{@file_path}"
       @logger.info cmd
-      @image.run_command cmd      
+      @image.run_command cmd
       @image = MiniMagick::Image.open(@file_path) # reload image
     end
 
