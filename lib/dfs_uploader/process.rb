@@ -43,7 +43,8 @@ module DfsUploader
 			end
 
       @image.run_command "convert -auto-orient #{@file_path} #{@file_path}"
-
+      @image = MiniMagick::Image.open(@file_path)
+      
       tell_smyk = p `identify -format '%[colorspace]' #{@file_path}`
 
       if tell_smyk.include?('CMYK') && @ext != "gif"
