@@ -58,14 +58,17 @@ module DfsUploader
 
         return if (w.to_f / h) == (ratio_w.to_f / ratio_h)
 
-        if w > h
+        if (w * ratio_h) > (h * ratio_w)
           extend_w = w
-          extend_h = (ratio_h * w - ratio_w * h) / ratio_w + h
-        elsif w <= h
-          extend_w = (ratio_w * h  - ratio_h * w) / ratio_h + w
+          extend_h = w * ratio_h / ratio_w
+        elsif (w * ratio_h) < (h * ratio_w)
           extend_h = h
+          extend_w = h * ratio_w / ratio_h
+        else
+          return
         end
 
+        Rails.logger.info "----- #{extend_w}x#{extend_h}"
         self.extent_edge!("#{extend_w}x#{extend_h}")
       end
 		end
